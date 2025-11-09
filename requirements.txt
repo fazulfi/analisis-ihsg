@@ -1,0 +1,6 @@
+pandas
+numpy
+requests
+python-telegram-bot>=20.0
+pytest
+pandas-ta
