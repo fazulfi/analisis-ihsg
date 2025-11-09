@@ -8,3 +8,13 @@ data/
 .idea/
 .DS_Store
 *.log
+# database, logs, backups
+/db/
+/logs/
+/backups/
+/*.db
+*.sqlite
+# python env
+venv/
+__pycache__/
+*.pyc
