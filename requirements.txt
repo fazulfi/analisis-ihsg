@@ -1,6 +1,19 @@
+HEAD
 pandas
 numpy
 requests
 python-telegram-bot>=20.0
 pytest
 git+https://github.com/twopirllc/pandas-ta.git@v2.3.4
+certifi==2025.10.5
+charset-normalizer==3.4.4
+idna==3.11
+numpy==2.3.4
+pandas==2.3.3
+python-dateutil==2.9.0.post0
+pytz==2025.2
+requests==2.32.5
+six==1.17.0
+tzdata==2025.2
+urllib3==2.5.0
+cb527ae (chore: setup virtualenv & requirements)
