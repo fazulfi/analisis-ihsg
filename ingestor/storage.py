@@ -107,3 +107,16 @@ def save_to_sqlite(rows: List[Dict], dbpath: str = "db/historical.db", pragmas: 
             raise
     finally:
         conn.close()
+
+# tambahkan ke ingestor/storage.py (di bagian bawah)
+def ensure_db_indexes(dbpath: str = "db/historical.db"):
+    import sqlite3
+    conn = sqlite3.connect(dbpath)
+    cur = conn.cursor()
+    # ensure table exists as safety (won't change if exists)
+    cur.execute(SQL_CREATE)
+    # create indexes if not exists
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_historical_timestamp ON historical(timestamp);")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_historical_symbol ON historical(symbol);")
+    conn.commit()
+    conn.close()
