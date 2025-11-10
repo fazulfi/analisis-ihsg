@@ -1,0 +1,22 @@
+{
+  "^JKSE": {
+    "buy": false,
+    "rsi": 66.13847528766722
+  },
+  "BBCA.JK": {
+    "buy": false,
+    "rsi": 69.51219512195122
+  },
+  "TLKM.JK": {
+    "buy": false,
+    "rsi": 68.27586206896552
+  },
+  "BMRI.JK": {
+    "buy": false,
+    "rsi": 74.72527472527473
+  },
+  "UNVR.JK": {
+    "buy": false,
+    "rsi": 67.17557251908397
+  }
+}
