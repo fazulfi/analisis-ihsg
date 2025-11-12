@@ -1,0 +1,30 @@
+# Signal Sanity Report
+
+Generated: 2025-11-12T15:41:18.898499 UTC
+
+
+
+## Config
+
+```json
+{'ema_spans': (9, 21), 'rsi_period': 14}
+```
+
+
+
+## Summary
+
+Total BUY signals: 2
+- 2025-09-24T00:00:00 price=7875.0000
+- 2025-10-28T00:00:00 price=7500.0000
+
+
+## Heuristics / Comments
+
+- Signal density 2.25% — reasonable for short sample.
+
+
+
+## Plot
+
+![plot](INDF.JK_sanity.png)
