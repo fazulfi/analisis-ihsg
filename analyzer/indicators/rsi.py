@@ -52,3 +52,33 @@ def rsi(prices: List[float], period: int) -> List[Optional[float]]:
         out[i] = compute_rsi(avg_gain, avg_loss)
 
     return out
+
+def rsi_buy_condition(rsi_vals):
+    """
+    rsi_vals: sequence (list/Series) of floats or None/NaN
+    Return list[bool] same length: True if rsi_current > 30 and rsi_current > rsi_prev
+    If either current or previous is None/NaN -> False
+    """
+    import math
+    n = len(rsi_vals) if hasattr(rsi_vals, '__len__') else 0
+    out = [False] * n
+    for i in range(1, n):
+        cur = rsi_vals[i]
+        prev = rsi_vals[i-1]
+        # reject None or NaN
+        if cur is None or prev is None:
+            continue
+        try:
+            if isinstance(cur, float) and math.isnan(cur):
+                continue
+            if isinstance(prev, float) and math.isnan(prev):
+                continue
+        except Exception:
+            pass
+        try:
+            if float(cur) > 30.0 and float(cur) > float(prev):
+                out[i] = True
+        except Exception:
+            # on any conversion/comparison error, leave False
+            continue
+    return out
