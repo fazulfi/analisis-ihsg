@@ -3,7 +3,7 @@
 Public API for indicators (DataFrame-friendly helpers).
 Exports: ema, add_ema, add_rsi, add_macd, add_atr, add_all_indicators
 """
-from .ema import add_ema, ema
+from .ema import add_ema, ema, ema_cross_buy
 from typing import Any, Dict, List, Optional, Mapping
 import pandas as pd
 import numpy as np
