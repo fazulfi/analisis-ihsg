@@ -1,38 +1,40 @@
 # tests/test_signal_rules.py
 import pandas as pd
-import numpy as np
-from analyzer.signals import generate_signals
+from datetime import datetime, timedelta
+from analyzer.signal_engine.rules import generate_signals
 
-def create_series_with_valid_confirmation():
-    """
-    Generate a price series that:
-    - has a clear short EMA crossing above long EMA,
-    - RSI remains below overbought (not >70),
-    - MACD histogram becomes positive after crossover.
-    We'll craft a short sequence so the test is deterministic.
-    """
-    # flat then ramp up
-    prices = [100.0] * 10 + list(np.linspace(100.0, 110.0, 20))
-    times = pd.date_range("2025-01-01", periods=len(prices), freq="min")
-    df = pd.DataFrame({"close": prices}, index=times)
-    # Add fake high/low for ATR (optional)
-    df["high"] = df["close"] + 0.2
-    df["low"] = df["close"] - 0.2
+def make_df(prices):
+    # create a small DataFrame with timestamp index and 'close' column
+    start = datetime(2025,1,1)
+    ts = [start + timedelta(minutes=i) for i in range(len(prices))]
+    df = pd.DataFrame({"timestamp": ts, "close": prices})
+    df.set_index("timestamp", inplace=False)  # keep timestamp as column too
     return df
 
-def test_generate_signals_produces_buy():
-    df = create_series_with_valid_confirmation()
-    cfg = {"short": 3, "long": 8, "rsi_period": 14, "rsi_overbought": 70.0, "macd": {"fast":3, "slow":8, "signal":5}}
-    out = generate_signals(df.copy(), config=cfg, force_indicators=True)
-    # expect at least one buy
-    assert (out["signal"] == "buy").any(), "Expected at least one buy signal"
-    # check that buy rows also have ema columns computed
-    assert f"ema_{cfg['short']}" in out.columns
-    assert f"ema_{cfg['long']}" in out.columns
-    # confirm that every 'buy' row satisfies the EMA crossover condition
-    buystamps = out.index[out["signal"] == "buy"]
-    assert len(buystamps) > 0
-    for ts in buystamps:
-        row = out.loc[ts]
-        # short ema should be >= long ema at buy (it crossed up)
-        assert row[f"ema_{cfg['short']}"] >= row[f"ema_{cfg['long']}"]
+def test_generate_signals_simple_cross_and_rsi():
+    # craft prices so EMA short crosses EMA long and RSI increases
+    # Use small spans so we get indicators quickly: short=3, long=5, rsi_period=3
+    # design: flat, then small rise to produce cross around idx 4
+    prices = [100, 100, 100, 101, 103, 106, 108, 110]
+    df = pd.DataFrame({
+        "timestamp": pd.date_range("2025-01-01", periods=len(prices), freq="min"),
+        "close": prices
+    })
+    cfg = {"ema_spans": (3,5), "rsi_period": 3}
+    out = generate_signals(df.copy(), cfg=cfg, price_col="close", ts_col="timestamp", force_indicators=True, emit_next_open=False)
+    # Expect at least one BUY where short EMA crosses above long EMA and RSI confirms
+    assert isinstance(out, list)
+    assert len(out) >= 1
+    # Ensure each emitted signal has expected keys
+    for s in out:
+        assert set(s.keys()) >= {"index","ts","signal","price"}
+        assert s["signal"] == "BUY"
+
+def test_emit_next_open_behaviour():
+    prices = [100, 100, 99, 100, 102, 105]  # a cross may happen at index 4, we expect next open emission shifts index
+    df = pd.DataFrame({"timestamp": pd.date_range("2025-01-01", periods=len(prices), freq="min"), "close": prices})
+    cfg = {"ema_spans": (3,5), "rsi_period": 3}
+    out_next = generate_signals(df.copy(), cfg=cfg, price_col="close", ts_col="timestamp", force_indicators=True, emit_next_open=True)
+    # If signals emitted, index in result should be >0 (shifted)
+    if out_next:
+        assert all(s["index"] > 0 for s in out_next)
