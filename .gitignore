@@ -18,3 +18,4 @@ data/
 venv/
 __pycache__/
 *.pyc
+state/last_signals.json
