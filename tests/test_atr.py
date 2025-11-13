@@ -1,33 +1,18 @@
-# tests/test_atr.py
 import pandas as pd
-import numpy as np
-from analyzer.indicators import add_atr
+from indicators.atr import compute_tr, compute_atr_wilder
 
-def sample_ohlcv_volatility_change():
-    # buat data low volatility lalu spike volatilitas
-    prices_close = list(np.linspace(100, 101, 30))  # relatif tenang
-    highs = [p + 0.5 for p in prices_close]
-    lows = [p - 0.5 for p in prices_close]
-    # lalu tambahkan beberapa bar dengan volatilitas naik
-    extra_close = [101, 103, 98, 107, 100]
-    extra_highs = [c + 3 for c in extra_close]
-    extra_lows = [c - 3 for c in extra_close]
-    close = prices_close + extra_close
-    high = highs + extra_highs
-    low = lows + extra_lows
-    times = pd.date_range("2025-01-01", periods=len(close), freq="min")
-    df = pd.DataFrame({"close": close, "high": high, "low": low}, index=times)
-    return df
-
-def test_add_atr_creates_column_and_increases_on_spike():
-    df = sample_ohlcv_volatility_change()
-    out = add_atr(df.copy(), period=14)
-    col = "atr_14"
-    assert col in out.columns
-    # setelah warmup (index > period) ATR tidak NaN
-    idx = min(len(out)-1, 14*2)
-    assert pd.notna(out[col].iloc[idx])
-    # ATR harus naik saat spike volatilitas (bandingkan sebelum dan setelah spike)
-    before = out[col].iloc[25]   # relatif tenang
-    after = out[col].iloc[-1]    # setelah spike
-    assert after > before
+def test_atr_wilder_n3():
+    df = pd.DataFrame([
+        {"date":"2025-11-01","open":1000,"high":1010,"low":1000,"close":1005},
+        {"date":"2025-11-02","open":1005,"high":1017,"low":1005,"close":1007},
+        {"date":"2025-11-03","open":1007,"high":1015,"low":1007,"close":1009},
+        {"date":"2025-11-04","open":1009,"high":1023,"low":1009,"close":1010},
+    ])
+    df_tr = compute_tr(df)
+    tr_expected = [10,12,8,14]
+    assert list(df_tr['tr'].round(8).astype(float)) == tr_expected
+    atr = compute_atr_wilder(df_tr['tr'], 3)
+    assert pd.isna(atr.iloc[0])
+    assert pd.isna(atr.iloc[1])
+    assert abs(atr.iloc[2] - 10.0) <= 1e-8
+    assert abs(atr.iloc[3] - (34.0/3.0)) <= 1e-8

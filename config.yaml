@@ -1,0 +1,9 @@
+atr_period: 14
+sl_multiplier: 1.5
+tp_multiplier: 3.0
+tick_size: 5
+atr_method: "wilder"
+entry_price_source: "close"
+output_folder: "OUTPUT"
+data_folder: "DATA"
+log_level: "INFO"
