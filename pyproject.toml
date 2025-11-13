@@ -1,0 +1,4 @@
+[project]
+name = "analisis_ihsg"
+version = "0.0.0"
+dependencies = []

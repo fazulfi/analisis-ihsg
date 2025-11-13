@@ -1,0 +1,11 @@
+ticker,input_file,signals_file,status,time_s,output_file,notes
+ADRO,data\tickers\ADRO.JK.csv,signals\ADRO_signals.csv,ok,0.68,OUTPUT\ADRO_signals.csv,
+ASII,data\tickers\ASII.JK.csv,signals\ASII_signals.csv,ok,0.67,OUTPUT\ASII_signals.csv,
+BBCA,data\tickers\BBCA.JK.csv,signals\BBCA_signals.csv,ok,0.71,OUTPUT\BBCA_signals.csv,
+BBNI,data\tickers\BBNI.JK.csv,signals\BBNI_signals.csv,ok,0.75,OUTPUT\BBNI_signals.csv,
+BBRI,data\tickers\BBRI.JK.csv,signals\BBRI_signals.csv,ok,0.72,OUTPUT\BBRI_signals.csv,
+BMRI,data\tickers\BMRI.JK.csv,signals\BMRI_signals.csv,ok,0.70,OUTPUT\BMRI_signals.csv,
+ICBP,data\tickers\ICBP.JK.csv,signals\ICBP_signals.csv,ok,0.77,OUTPUT\ICBP_signals.csv,
+INDF,data\tickers\INDF.JK.csv,signals\INDF_signals.csv,ok,0.67,OUTPUT\INDF_signals.csv,
+TLKM,data\tickers\TLKM.JK.csv,signals\TLKM_signals.csv,ok,0.75,OUTPUT\TLKM_signals.csv,
+UNVR,data\tickers\UNVR.JK.csv,signals\UNVR_signals.csv,ok,0.63,OUTPUT\UNVR_signals.csv,

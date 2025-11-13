@@ -1,0 +1,4 @@
+index,date,signal_type,entry_price,atr_value,note
+2,2025-11-03,BUY,1009.0,10.0,
+3,2025-11-04,BUY,1005.0,0.0,
+4,2025-11-05,BUY,2.0,10.0,
