@@ -1,4 +1,20 @@
 #!/usr/bin/env python3
+
+# ---- BEGIN: robust import for indicators (added by assistant) ----
+try:
+    # normal package-style import (preferred)
+    from indicators.sltp import compute_sltp_for_signal
+except ModuleNotFoundError:
+    # fallback when script is run directly (e.g. `python scripts/...`) or via subprocess
+    import sys, os
+    # add project root (one level up from scripts/) to sys.path
+    project_root = os.path.dirname(os.path.dirname(__file__))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    from indicators.sltp import compute_sltp_for_signal
+# ---- END: robust import for indicators ----
+
+
 """
 scripts/calc_sltp_rounding.py
 Single-step: compute SL/TP and apply tick rounding.
