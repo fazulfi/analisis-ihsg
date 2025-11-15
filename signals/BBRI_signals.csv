@@ -1,2 +1,2 @@
-index,signal_type,date
-2,BUY,2025-07-13
+index,signal_type,date,entry_price,atr_value
+2,BUY,2025-07-13,1334.11,21.9554

@@ -1,35 +1,44 @@
+# tests/test_entry_price.py
 import pandas as pd
-from indicators.entry_price import get_entry_price_for_signal
+from indicators.entry_price import resolve_entry_price_for_signal
 
-def test_entry_close():
-    df = pd.DataFrame([
-        {"date":"2025-11-01","open":100,"high":110,"low":90,"close":105},
-        {"date":"2025-11-02","open":106,"high":112,"low":100,"close":110},
-    ])
-    price, note = get_entry_price_for_signal(df, 0, source="close")
-    assert price == 105
-    assert note is None
+def make_prices():
+    rows = [
+        {"timestamp":"2025-01-01", "open":100, "high":110, "low":90, "close":105, "volume":1000},
+        {"timestamp":"2025-01-02", "open":106, "high":116, "low":96, "close":110, "volume":1000},
+        {"timestamp":"2025-01-03", "open":111, "high":121, "low":101, "close":115, "volume":1000},
+    ]
+    return pd.DataFrame(rows)
 
-def test_entry_next_open_ok():
-    df = pd.DataFrame([
-        {"date":"2025-11-01","open":100,"high":110,"low":90,"close":105},
-        {"date":"2025-11-02","open":106,"high":112,"low":100,"close":110},
-    ])
-    price, note = get_entry_price_for_signal(df, 0, source="next_open")
-    assert price == 106
-    assert note is None
+def test_entry_price_from_close():
+    prices = make_prices()
+    sig = {"timestamp":"2025-01-02"}
+    price, used, note = resolve_entry_price_for_signal(sig, prices, "timestamp", "close")
+    assert price == 110.0
+    assert used == "close"
+    assert note == ""
 
-def test_entry_next_open_no_next():
-    df = pd.DataFrame([
-        {"date":"2025-11-01","open":100,"high":110,"low":90,"close":105},
-    ])
-    price, note = get_entry_price_for_signal(df, 0, source="next_open")
+def test_entry_price_next_open_available():
+    prices = make_prices()
+    sig = {"timestamp":"2025-01-01"}
+    price, used, note = resolve_entry_price_for_signal(sig, prices, "timestamp", "next_open")
+    # next open for 2025-01-01 is open on 2025-01-02
+    assert price == 106.0
+    assert used == "next_open"
+    assert note == ""
+
+def test_entry_price_next_open_missing():
+    prices = make_prices()
+    sig = {"timestamp":"2025-01-03"}
+    price, used, note = resolve_entry_price_for_signal(sig, prices, "timestamp", "next_open")
     assert price is None
+    assert used == "missing"
     assert note == "cannot_use_next_open"
 
-def test_missing_columns():
-    df = pd.DataFrame([{"date":"2025-11-01","close":100}])
-    p, n = get_entry_price_for_signal(df, 0, source="next_open")
-    assert p is None and n == "missing_open_column"
-    p2, n2 = get_entry_price_for_signal(df, 0, source="close")
-    assert p2 == 100 and n2 is None
+def test_missing_timestamp_in_signal():
+    prices = make_prices()
+    sig = {"date":""}  # empty
+    price, used, note = resolve_entry_price_for_signal(sig, prices, "timestamp", "close")
+    assert price is None
+    assert used == "missing"
+    assert "timestamp" in note

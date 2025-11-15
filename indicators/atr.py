@@ -1,43 +1,58 @@
 # indicators/atr.py
-from typing import Optional
+from typing import Union, Iterable
+import numpy as np
 import pandas as pd
 
-def compute_tr(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.copy()
-    df.columns = [c.lower() for c in df.columns]
-    for c in ("high","low","close"):
-        if c not in df.columns:
-            raise ValueError(f"Missing required column: {c}")
-    df['high'] = pd.to_numeric(df['high'], errors='raise')
-    df['low'] = pd.to_numeric(df['low'], errors='raise')
-    df['close'] = pd.to_numeric(df['close'], errors='raise')
+def _to_series_float(x) -> pd.Series:
+    """Normalize input to pandas Series of float, preserving index if possible."""
+    if isinstance(x, pd.Series):
+        ser = x.astype(float).reset_index(drop=True)
+        ser.index = x.index  # keep original index
+        return ser.astype(float)
+    else:
+        return pd.Series(list(x), dtype=float)
 
-    df['prev_close'] = df['close'].shift(1)
-    cand1 = df['high'] - df['low']
-    cand2 = (df['high'] - df['prev_close']).abs()
-    cand3 = (df['low'] - df['prev_close']).abs()
-    df['tr'] = pd.concat([cand1, cand2, cand3], axis=1).max(axis=1)
-    df = df.drop(columns=['prev_close'])
-    if (df['tr'] < 0).any():
-        raise ValueError("Computed TR has negative values")
-    return df
+def compute_atr_wilder(tr_values: Union[pd.Series, Iterable, np.ndarray],
+                       n: int = 14) -> pd.Series:
+    """
+    Compute ATR using Wilder's smoothing.
 
-def compute_atr_wilder(tr_series: pd.Series, n: int) -> pd.Series:
-    tr = tr_series.astype(float).reset_index(drop=True)
-    atr = pd.Series([float('nan')] * len(tr))
-    if len(tr) < n:
+    Args:
+        tr_values: sequence (Series/array-like) of True Range values (>=0).
+        n: period for ATR (default 14).
+
+    Returns:
+        pd.Series of ATR values, same index length as input. For indices < n-1 -> NaN.
+        The first valid ATR is placed at index (n-1) and equals mean(TR[0:n]).
+    """
+    if n <= 0:
+        raise ValueError("n must be positive integer")
+
+    tr = _to_series_float(tr_values)
+    length = len(tr)
+
+    # allocate result as float with NaN
+    atr = pd.Series([np.nan] * length, index=tr.index, dtype=float)
+
+    if length < n:
+        # not enough data -> all NaN
         return atr
-    first_val = tr.iloc[0:n].mean()
-    atr.iloc[n-1] = float(first_val)
-    for i in range(n, len(tr)):
-        prev_atr = atr.iloc[i-1]
-        tr_i = tr.iloc[i]
-        atr_val = ((prev_atr * (n - 1)) + tr_i) / n
-        atr.iloc[i] = float(atr_val)
-    atr.index = tr_series.index
-    return atr
 
-def compute_tr_and_atr(df: pd.DataFrame, atr_period: int = 14) -> pd.DataFrame:
-    df2 = compute_tr(df)
-    df2['atr'] = compute_atr_wilder(df2['tr'], atr_period)
-    return df2
+    # compute first ATR value as arithmetic mean of first n TRs
+    first_slice = tr.iloc[0:n].astype(float)
+    first_atr = float(first_slice.mean())
+
+    # place at index n-1
+    atr.iloc[n-1] = first_atr
+
+    # Wilder smoothing recurrence: ATR_t = ( (ATR_{t-1}*(N-1)) + TR_t ) / N
+    prev_atr = first_atr
+    K = float(n)
+
+    for i in range(n, length):
+        tr_t = float(tr.iloc[i])
+        curr_atr = ((prev_atr * (K - 1.0)) + tr_t) / K
+        atr.iloc[i] = curr_atr
+        prev_atr = curr_atr
+
+    return atr

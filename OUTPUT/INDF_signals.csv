@@ -1,2 +1,2 @@
 date,signal_type,entry_price,atr_value,sl_price,tp_price,sl_price_rounded,tp_price_rounded,atr_period,sl_multiplier,tp_multiplier,entry_price_source,notes
-2025-07-23,BUY,,,,,,,14,1.5,3.0,close,insufficient_data_for_atr;insufficient_data_for_atr_or_entry_blocking
+2025-07-23,BUY,8350,171.115,,,,,14,1.5,3.0,close,insufficient_data_for_atr;insufficient_data_for_atr_or_entry_blocking

@@ -1,3 +1,4 @@
+# AUTOPATCHED_BY_apply_pipeline_patches: added robust imports and timestamp default
 #!/usr/bin/env python3
 """
 scripts/backtest_sanity.py
@@ -18,7 +19,24 @@ import matplotlib.pyplot as plt
 
 # use project modules
 from analyzer.signal_engine.rules import generate_signals
-from analyzer.indicators import add_all_indicators
+try:
+    from analyzer.indicators import add_all_indicators
+except Exception:
+    # fallback when running as script (adjust sys.path to include repo root)
+    import sys, os
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    if repo_root not in sys.path:
+        sys.path.insert(0, repo_root)
+    try:
+        from analyzer.indicators import add_all_indicators
+    except Exception:
+        # last resort: try top-level import without package prefix
+        modname = 'analyzer.indicators'.split('.')[-1]
+        from importlib import import_module
+        im = import_module(modname)
+        for name in ['add_all_indicators']:
+            globals()[name] = getattr(im, name)
+
 
 def load_data(csv_path: str = None, ticker: str = None, period_days: int = 7):
     if csv_path:

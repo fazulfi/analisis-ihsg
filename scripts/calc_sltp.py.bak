@@ -1,26 +1,8 @@
-# AUTOPATCHED_BY_apply_pipeline_patches: added robust imports and timestamp default
 #!/usr/bin/env python3
 import sys
 from pathlib import Path
 import pandas as pd
-try:
-    from indicators.sltp import compute_sltp_for_signal
-except Exception:
-    # fallback when running as script (adjust sys.path to include repo root)
-    import sys, os
-    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    if repo_root not in sys.path:
-        sys.path.insert(0, repo_root)
-    try:
-        from indicators.sltp import compute_sltp_for_signal
-    except Exception:
-        # last resort: try top-level import without package prefix
-        modname = 'indicators.sltp'.split('.')[-1]
-        from importlib import import_module
-        im = import_module(modname)
-        for name in ['compute_sltp_for_signal']:
-            globals()[name] = getattr(im, name)
-
+from indicators.sltp import compute_sltp_for_signal
 
 def load_config(cfg_path="config.yaml"):
     import json, os
